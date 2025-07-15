@@ -1,0 +1,41 @@
+{
+  "name": "scrcpy-gui",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "electron-builder"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "build": {
+    "appId": "com.example.scrcpy-gui",
+    "win": {
+      "target": "nsis"
+    },
+    "extraResources": [
+      {
+        "from": "adb/",
+        "to": "adb",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "scrcpy/",
+        "to": "scrcpy",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
+  },
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^37.2.1",
+    "electron-builder": "^26.0.12"
+  }
+}

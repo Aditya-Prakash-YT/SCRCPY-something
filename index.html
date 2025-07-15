@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Scrcpy Compact UI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- TOP ACTION BAR -->
+        <header class="header">
+            <div class="title">Scrcpy</div>
+            <div class="main-actions">
+                <button id="start-mirroring">Start Mirroring</button>
+                <button id="record-screen">Record Screen</button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT GRID (NO SCROLLING) -->
+        <div class="main-content">
+            <!-- LEFT COLUMN -->
+            <div class="left-column">
+                <div class="card">
+                    <h2>Connection</h2>
+                    <div class="form-group">
+                        <label for="device">Device</label>
+                        <select id="device"></select>
+                    </div>
+                    <button id="refresh-devices">Refresh</button>
+                    <div class="form-group">
+                        <label for="ip-address">Wireless IP</label>
+                        <input type="text" id="ip-address" placeholder="e.g., 192.168.1.10">
+                    </div>
+                    <button id="connect-wireless">Connect</button>
+                </div>
+                <div class="card">
+                    <h2>Device Details</h2>
+                    <div class="form-group-inline"><label>Name:</label><span id="device-name">N/A</span></div>
+                    <div class="form-group-inline"><label>Battery:</label><span id="device-battery">N/A</span></div>
+                    <div class="form-group-inline"><label>Connection:</label><span id="device-connection">N/A</span></div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN WITH TABS -->
+            <div class="right-column">
+                <div class="card tab-container">
+                    <div class="tab-header">
+                        <button class="tab-link active" data-tab="display">Display</button>
+                        <button class="tab-link" data-tab="sound">Sound</button>
+                        <button class="tab-link" data-tab="window">Window</button>
+                        <button class="tab-link" data-tab="others">Others</button>
+                    </div>
+                    <div class="tab-content-wrapper">
+                        <!-- Display Tab -->
+                        <div id="display" class="tab-content active">
+                            <div class="form-group-inline"><label for="resolution">Resolution</label><input type="number" id="resolution" placeholder="e.g., 1080"></div>
+                            <div class="form-group-inline"><label for="bitrate">Bitrate (Mbps)</label><input type="number" id="bitrate" placeholder="Default: 8"></div>
+                            <div class="form-group-inline"><label for="max-fps">Max FPS</label><input type="number" id="max-fps" placeholder="Default"></div>
+                            <div class="form-group-inline"><label for="codec">Codec</label>
+                                <select id="codec">
+                                    <option value="h264">H.264</option>
+                                    <option value="h265" selected>H.265</option>
+                                </select>
+                            </div>
+                            <div class="form-group-inline"><label for="encoder">Encoder</label><input type="text" id="encoder" placeholder="Optional"></div>
+                            <div class="toggle-group"><label for="show-touches">Show Touches</label><label class="toggle-switch"><input type="checkbox" id="show-touches"><span class="slider"></span></label></div>
+                            <div class="form-group-inline"><label for="recording-format">Rec. Format</label>
+                                <select id="recording-format">
+                                    <option value="mp4">MP4</option>
+                                    <option value="mkv">MKV</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Sound Tab -->
+                        <div id="sound" class="tab-content">
+                            <div class="toggle-group"><label for="no-audio">No Audio</label><label class="toggle-switch"><input type="checkbox" id="no-audio"><span class="slider"></span></label></div>
+                            <div class="form-group-inline"><label for="audio-bitrate">Audio Bitrate (kbps)</label><input type="number" id="audio-bitrate" placeholder="Default: 128"></div>
+                        </div>
+                        <!-- Window Tab -->
+                        <div id="window" class="tab-content">
+                            <div class="toggle-group"><label for="fullscreen">Fullscreen</label><label class="toggle-switch"><input type="checkbox" id="fullscreen"><span class="slider"></span></label></div>
+                            <div class="toggle-group"><label for="always-on-top">Always on Top</label><label class="toggle-switch"><input type="checkbox" id="always-on-top"><span class="slider"></span></label></div>
+                            <div class="form-group-inline"><label for="window-pos">Position (x,y)</label><input type="text" id="window-pos" placeholder="e.g., 100,100"></div>
+                            <div class="form-group-inline"><label for="window-size">Size (w,h)</label><input type="text" id="window-size" placeholder="e.g., 800,600"></div>
+                        </div>
+                        <!-- Others Tab -->
+                        <div id="others" class="tab-content">
+                            <div class="toggle-group"><label for="disable-control">View-only</label><label class="toggle-switch"><input type="checkbox" id="disable-control"><span class="slider"></span></label></div>
+                            <div class="toggle-group"><label for="stay-awake">Stay Awake</label><label class="toggle-switch"><input type="checkbox" id="stay-awake"><span class="slider"></span></label></div>
+                            <div class="toggle-group"><label for="turn-screen-off">Screen Off</label><label class="toggle-switch"><input type="checkbox" id="turn-screen-off"><span class="slider"></span></label></div>
+                            <div class="form-group-inline"><label for="crop">Crop (w:h:x:y)</label><input type="text" id="crop" placeholder="e.g., 1080:1080:0:0"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM LOGGER BOX -->
+        <div class="logger-box">
+            <button id="copy-log" class="copy-log-button">Copy Log</button>
+            <button id="save-log" class="save-log-button">Save Log</button>
+            <div id="output"></div>
+        </div>
+    </div>
+
+    <script src="./ui.js" defer></script>
+    <script src="./renderer.js" defer></script>
+</body>
+</html>
