@@ -38,9 +38,36 @@ body {
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+  gap: 1rem;
 }
 .title { font-size: 1.7rem; font-weight: 700; color: var(--text-primary); }
 .main-actions { display: flex; gap: 0.6rem; }
+.status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(79, 98, 219, 0.2);
+  color: #cdd4ff;
+  font-size: 0.7rem;
+  border: 1px solid rgba(79, 98, 219, 0.6);
+}
+.status-pill.subtle {
+  background: rgba(160, 160, 176, 0.12);
+  color: var(--text-secondary);
+  border-color: rgba(160, 160, 176, 0.3);
+}
+.status-pill.info {
+  background: rgba(76, 175, 80, 0.15);
+  color: #b7f5bb;
+  border-color: rgba(76, 175, 80, 0.4);
+}
 
 /* Main Content Layout */
 .main-content {
@@ -80,6 +107,7 @@ body {
 .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
 .form-group-inline { display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; }
 label { font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; }
+label[for="log-filter"] { font-size: 0.75rem; }
 input, select {
   width: 100%;
   padding: 0.5rem;
@@ -92,6 +120,15 @@ input, select {
 input:focus, select:focus { outline: 1px solid var(--primary-accent); }
 .form-group-inline input, .form-group-inline select { width: 65%; }
 #device-name, #device-battery, #device-connection { font-weight: 500; color: var(--text-primary); font-size: 0.85rem;}
+.helper-text {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.input-error {
+  border-color: #f44336;
+  outline: 1px solid rgba(244, 67, 54, 0.6);
+}
 
 /* Buttons */
 button {
@@ -108,6 +145,37 @@ button {
 button:hover { background-color: #303f9f; }
 #start-mirroring { background-color: var(--secondary-accent); border-color: var(--secondary-accent); }
 #start-mirroring:hover { background-color: #45a049; }
+.ghost-button {
+  background: transparent;
+  border-color: rgba(160, 160, 176, 0.35);
+  color: var(--text-primary);
+}
+.ghost-button:hover {
+  background: rgba(160, 160, 176, 0.1);
+}
+.ghost-button.danger {
+  border-color: rgba(244, 67, 54, 0.6);
+  color: #f9b6b6;
+}
+.ghost-button.danger:hover {
+  background: rgba(244, 67, 54, 0.15);
+}
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.5rem;
+}
+.preset-button {
+  background: rgba(63, 81, 181, 0.15);
+  border-color: rgba(63, 81, 181, 0.6);
+  color: #cdd4ff;
+}
+.preset-button:hover { background: rgba(63, 81, 181, 0.3); }
 
 /* Tabs */
 .tab-container { padding: 0; flex-grow: 1; min-height: 0; }
@@ -120,6 +188,19 @@ button:hover { background-color: #303f9f; }
 .tab-content-wrapper { padding: 0.75rem; }
 .tab-content { display: none; gap: 0.75rem; flex-direction: column; }
 .tab-content.active { display: flex; }
+textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  padding: 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.8rem;
+}
+textarea:focus { outline: 1px solid var(--primary-accent); }
 
 
 /* Toggle Switch */
@@ -135,43 +216,44 @@ input:checked + .slider:before { transform: translateX(16px); }
     background-color: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    height: 110px; /* Fixed height for the log area */
+    height: 130px; /* Fixed height for the log area */
     flex-shrink: 0;
     padding: 0.5rem 0.75rem;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: auto;
 }
 
-.copy-log-button {
-    position: absolute;
-    top: 7px;
-    right: 25px;
-    padding: 0.2rem 0.5rem;
+.log-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+.log-actions {
+    display: flex;
+    gap: 0.4rem;
+}
+.log-toolbar button {
+    padding: 0.25rem 0.5rem;
     font-size: 0.7rem;
-    background-color: #555;
-    border: none;
-    z-index: 10;
 }
-
-.copy-log-button:hover {
-    background-color: #777;
+.log-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: 45%;
+    min-width: 160px;
 }
-
-.save-log-button {
-    position: absolute;
-    top: 7px;
-    right: 95px;
-    padding: 0.2rem 0.5rem;
+.log-filter input {
+    padding: 0.3rem 0.4rem;
     font-size: 0.7rem;
-    background-color: #555;
-    border: none;
-    z-index: 10;
-}
-
-.save-log-button:hover {
-    background-color: #777;
 }
 #output {
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     font-family: monospace;
     font-size: 0.75rem;
