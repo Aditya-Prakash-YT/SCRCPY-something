@@ -165,6 +165,11 @@ button:hover { background-color: #303f9f; }
   grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
 }
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.5rem;
+}
 .preset-button {
   background: rgba(63, 81, 181, 0.15);
   border-color: rgba(63, 81, 181, 0.6);
@@ -183,6 +188,19 @@ button:hover { background-color: #303f9f; }
 .tab-content-wrapper { padding: 0.75rem; }
 .tab-content { display: none; gap: 0.75rem; flex-direction: column; }
 .tab-content.active { display: flex; }
+textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  padding: 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.8rem;
+}
+textarea:focus { outline: 1px solid var(--primary-accent); }
 
 
 /* Toggle Switch */

@@ -66,6 +66,7 @@
                         <button class="tab-link" data-tab="sound">Sound</button>
                         <button class="tab-link" data-tab="window">Window</button>
                         <button class="tab-link" data-tab="others">Others</button>
+                        <button class="tab-link" data-tab="session">Session</button>
                     </div>
                     <div class="tab-content-wrapper">
                         <!-- Display Tab -->
@@ -106,6 +107,19 @@
                             <div class="toggle-group"><label for="stay-awake">Stay Awake</label><label class="toggle-switch"><input type="checkbox" id="stay-awake"><span class="slider"></span></label></div>
                             <div class="toggle-group"><label for="turn-screen-off">Screen Off</label><label class="toggle-switch"><input type="checkbox" id="turn-screen-off"><span class="slider"></span></label></div>
                             <div class="form-group-inline"><label for="crop">Crop (w:h:x:y)</label><input type="text" id="crop" placeholder="e.g., 1080:1080:0:0"></div>
+                        </div>
+                        <!-- Session Tab -->
+                        <div id="session" class="tab-content">
+                            <div class="toggle-group"><label for="auto-scroll">Auto-scroll logs</label><label class="toggle-switch"><input type="checkbox" id="auto-scroll" checked><span class="slider"></span></label></div>
+                            <div class="form-group">
+                                <label for="command-preview">Command Preview</label>
+                                <textarea id="command-preview" readonly rows="4"></textarea>
+                            </div>
+                            <div class="action-grid">
+                                <button id="copy-command" class="ghost-button">Copy Command</button>
+                                <button id="reset-options" class="ghost-button danger">Reset Options</button>
+                            </div>
+                            <p class="helper-text">Preview updates automatically as you change options.</p>
                         </div>
                     </div>
                 </div>

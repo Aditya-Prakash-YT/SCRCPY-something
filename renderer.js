@@ -15,6 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const activeDevicePill = document.getElementById('active-device');
   const lastActionPill = document.getElementById('last-action');
   const presetButtons = document.querySelectorAll('.preset-button');
+  const rebootDeviceBtn = document.getElementById('reboot-device');
+  const disconnectDeviceBtn = document.getElementById('disconnect-device');
+  const autoScrollCheckbox = document.getElementById('auto-scroll');
+  const commandPreview = document.getElementById('command-preview');
+  const copyCommandBtn = document.getElementById('copy-command');
+  const resetOptionsBtn = document.getElementById('reset-options');
 
   // Device Details Elements
   const deviceNameSpan = document.getElementById('device-name');
@@ -44,6 +50,18 @@ document.addEventListener('DOMContentLoaded', () => {
   updateStatusPills({ connection: 'Searching...', device: 'Detecting device', action: 'Idle' });
 
   // Functions
+  const defaultOptions = {
+    codec: 'h265',
+    recordingFormat: 'mp4',
+    showTouches: false,
+    fullscreen: false,
+    alwaysOnTop: false,
+    turnScreenOff: false,
+    disableControl: false,
+    stayAwake: false,
+    noAudio: false,
+    autoScroll: true
+  };
   const presets = {
     quality: {
       resolution: '1440',
@@ -99,6 +117,9 @@ document.addEventListener('DOMContentLoaded', () => {
     logEntry.dataset.logText = data.toLowerCase();
     logEntry.textContent = data;
     outputDiv.appendChild(logEntry);
+    if (autoScrollCheckbox.checked) {
+      outputDiv.scrollTop = outputDiv.scrollHeight;
+    }
     outputDiv.scrollTop = outputDiv.scrollHeight;
 
     if (logFilterInput.value) {
@@ -188,7 +209,39 @@ document.addEventListener('DOMContentLoaded', () => {
     return args;
   }
 
+  function updateCommandPreview() {
+    const args = getScrcpyArgs();
+    const command = ['scrcpy', ...args].join(' ');
+    commandPreview.value = command;
+  }
+
+  function resetOptions() {
+    resolutionInput.value = '';
+    bitrateInput.value = '';
+    maxFpsInput.value = '';
+    codecSelect.value = defaultOptions.codec;
+    encoderInput.value = '';
+    fullscreenCheckbox.checked = defaultOptions.fullscreen;
+    alwaysOnTopCheckbox.checked = defaultOptions.alwaysOnTop;
+    showTouchesCheckbox.checked = defaultOptions.showTouches;
+    turnScreenOffCheckbox.checked = defaultOptions.turnScreenOff;
+    windowPosInput.value = '';
+    windowSizeInput.value = '';
+    disableControlCheckbox.checked = defaultOptions.disableControl;
+    stayAwakeCheckbox.checked = defaultOptions.stayAwake;
+    noAudioCheckbox.checked = defaultOptions.noAudio;
+    audioBitrateInput.value = '';
+    cropInput.value = '';
+    recordingFormatSelect.value = defaultOptions.recordingFormat;
+    autoScrollCheckbox.checked = defaultOptions.autoScroll;
+    updateCommandPreview();
+  }
+
   // Event Listeners
+  refreshDevicesBtn.addEventListener('click', () => {
+    getDevices();
+    setLastAction('Refreshing devices...');
+  });
   refreshDevicesBtn.addEventListener('click', getDevices);
   ipAddressInput.addEventListener('input', () => {
     ipAddressInput.classList.remove('input-error');
@@ -213,12 +266,37 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 1000);
     }
   });
+
+  rebootDeviceBtn.addEventListener('click', () => {
+    const selectedDevice = deviceSelect.value;
+    if (!selectedDevice || selectedDevice.includes('No device')) {
+      appendLogEntry('No device selected to reboot.', 'error');
+      return;
+    }
+    window.electronAPI.executeCommand('adb', ['-s', selectedDevice, 'reboot'], 'adb-reboot');
+    setLastAction('Rebooting device...');
+  });
+
+  disconnectDeviceBtn.addEventListener('click', () => {
+    const selectedDevice = deviceSelect.value;
+    if (!selectedDevice || selectedDevice.includes('No device')) {
+      appendLogEntry('No device selected to disconnect.', 'error');
+      return;
+    }
+    if (!selectedDevice.includes(':')) {
+      appendLogEntry('Disconnect is only available for wireless devices.', 'error');
+      return;
+    }
+    window.electronAPI.executeCommand('adb', ['disconnect', selectedDevice], 'adb-disconnect');
+    setLastAction('Disconnecting device...');
+  });
   
   startMirroringBtn.addEventListener('click', () => {
     console.log('Starting mirroring...');
     setLastAction('Starting mirroring...');
     const args = getScrcpyArgs();
     window.electronAPI.executeCommand('scrcpy', args);
+    updateCommandPreview();
   });
 
   recordScreenBtn.addEventListener('click', async () => {
@@ -230,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const args = getScrcpyArgs();
       args.push('--record', filePath);
       window.electronAPI.executeCommand('scrcpy', args);
+      updateCommandPreview();
     }
   });
 
@@ -269,6 +348,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     } else if (commandType === 'adb-connect') {
         setLastAction('Wireless connection updated');
+    } else if (commandType === 'adb-reboot') {
+        setLastAction('Reboot command sent');
+    } else if (commandType === 'adb-disconnect') {
+        setLastAction('Device disconnected');
     }
   });
 
@@ -328,6 +411,52 @@ document.addEventListener('DOMContentLoaded', () => {
       stayAwakeCheckbox.checked = true;
 
       setLastAction(`Preset applied: ${button.textContent}`);
+      updateCommandPreview();
+    });
+  });
+
+  copyCommandBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(commandPreview.value).then(() => {
+      setLastAction('Command copied');
+    }).catch(err => {
+      appendLogEntry(`Failed to copy command: ${err}`, 'error');
+    });
+  });
+
+  resetOptionsBtn.addEventListener('click', () => {
+    resetOptions();
+    setLastAction('Options reset');
+  });
+
+  [
+    resolutionInput,
+    bitrateInput,
+    maxFpsInput,
+    codecSelect,
+    encoderInput,
+    fullscreenCheckbox,
+    alwaysOnTopCheckbox,
+    showTouchesCheckbox,
+    turnScreenOffCheckbox,
+    windowPosInput,
+    windowSizeInput,
+    disableControlCheckbox,
+    stayAwakeCheckbox,
+    noAudioCheckbox,
+    audioBitrateInput,
+    cropInput,
+    recordingFormatSelect,
+    deviceSelect
+  ].forEach(element => {
+    element.addEventListener('input', updateCommandPreview);
+    element.addEventListener('change', updateCommandPreview);
+  });
+
+  autoScrollCheckbox.addEventListener('change', () => {
+    setLastAction(autoScrollCheckbox.checked ? 'Auto-scroll enabled' : 'Auto-scroll disabled');
+  });
+
+  updateCommandPreview();
     });
   });
 });
