@@ -216,13 +216,14 @@ input:checked + .slider:before { transform: translateX(16px); }
     background-color: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    height: 110px; /* Fixed height for the log area */
+    height: 130px; /* Fixed height for the log area */
     flex-shrink: 0;
     padding: 0.5rem 0.75rem;
     position: relative;
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+    margin-top: auto;
 }
 
 .log-toolbar {
