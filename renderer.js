@@ -9,6 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const recordingFormatSelect = document.getElementById('recording-format');
   const outputDiv = document.getElementById('output');
   const copyLogBtn = document.getElementById('copy-log');
+  const clearLogBtn = document.getElementById('clear-log');
+  const logFilterInput = document.getElementById('log-filter');
+  const connectionStatusPill = document.getElementById('connection-status');
+  const activeDevicePill = document.getElementById('active-device');
+  const lastActionPill = document.getElementById('last-action');
+  const presetButtons = document.querySelectorAll('.preset-button');
 
   // Device Details Elements
   const deviceNameSpan = document.getElementById('device-name');
@@ -35,8 +41,75 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial Actions
   getDevices();
+  updateStatusPills({ connection: 'Searching...', device: 'Detecting device', action: 'Idle' });
 
   // Functions
+  const presets = {
+    quality: {
+      resolution: '1440',
+      bitrate: '16',
+      maxFps: '60',
+      codec: 'h265',
+      audioBitrate: '256',
+      windowSize: '1280x720',
+      showTouches: false,
+      fullscreen: false
+    },
+    balanced: {
+      resolution: '1080',
+      bitrate: '8',
+      maxFps: '60',
+      codec: 'h265',
+      audioBitrate: '128',
+      windowSize: '1280x720',
+      showTouches: true,
+      fullscreen: false
+    },
+    latency: {
+      resolution: '960',
+      bitrate: '4',
+      maxFps: '45',
+      codec: 'h264',
+      audioBitrate: '96',
+      windowSize: '1024x576',
+      showTouches: true,
+      fullscreen: false
+    }
+  };
+
+  function updateStatusPills({ connection, device, action }) {
+    if (connection) {
+      connectionStatusPill.textContent = connection;
+    }
+    if (device) {
+      activeDevicePill.textContent = device;
+    }
+    if (action) {
+      lastActionPill.textContent = action;
+    }
+  }
+
+  function setLastAction(text) {
+    updateStatusPills({ action: text });
+  }
+
+  function appendLogEntry(data, commandType = 'local') {
+    const logEntry = document.createElement('div');
+    logEntry.classList.add('log-entry');
+    logEntry.dataset.logText = data.toLowerCase();
+    logEntry.textContent = data;
+    outputDiv.appendChild(logEntry);
+    outputDiv.scrollTop = outputDiv.scrollHeight;
+
+    if (logFilterInput.value) {
+      const query = logFilterInput.value.toLowerCase();
+      logEntry.hidden = !logEntry.dataset.logText.includes(query);
+    }
+    if (commandType === 'error') {
+      setLastAction('Action failed');
+    }
+  }
+
   function getDevices() {
     window.electronAPI.executeCommand('adb', ['devices'], 'adb-devices');
   }
@@ -46,6 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
       deviceNameSpan.textContent = 'N/A';
       deviceBatterySpan.textContent = 'N/A';
       deviceConnectionSpan.textContent = 'N/A';
+      updateStatusPills({ connection: 'Disconnected', device: 'No device selected' });
       return;
     }
 
@@ -58,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Determine connection type
     const connectionType = deviceId.includes(':') ? 'Wireless' : 'USB';
     deviceConnectionSpan.textContent = connectionType;
+    updateStatusPills({ connection: `Connected · ${connectionType}`, device: deviceId });
   }
 
   // Event Listener for device selection change
@@ -91,7 +166,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const windowPos = windowPosInput.value;
     if (windowPos && windowPos.includes(',')) args.push(`--window-x=${windowPos.split(',')[0]}`, `--window-y=${windowPos.split(',')[1]}`);
     const windowSize = windowSizeInput.value;
-    if (windowSize && windowSize.includes('x')) args.push(`--window-width=${windowSize.split('x')[0]}`, `--window-height=${windowSize.split('x')[1]}`);
+    if (windowSize) {
+      const delimiter = windowSize.includes('x') ? 'x' : windowSize.includes(',') ? ',' : null;
+      if (delimiter) {
+        const [width, height] = windowSize.split(delimiter).map(value => value.trim());
+        if (width && height) {
+          args.push(`--window-width=${width}`, `--window-height=${height}`);
+        }
+      }
+    }
 
     if (disableControlCheckbox.checked) args.push('-n');
     if (stayAwakeCheckbox.checked) args.push('-w');
@@ -107,9 +190,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Event Listeners
   refreshDevicesBtn.addEventListener('click', getDevices);
+  ipAddressInput.addEventListener('input', () => {
+    ipAddressInput.classList.remove('input-error');
+  });
 
   connectWirelessBtn.addEventListener('click', () => {
     const ipAddress = ipAddressInput.value;
+    const ipPattern = /^(?:\d{1,3}\.){3}\d{1,3}$/;
+    if (!ipAddress || !ipPattern.test(ipAddress)) {
+      ipAddressInput.classList.add('input-error');
+      appendLogEntry('Invalid IP address. Example format: 192.168.1.10', 'error');
+      setLastAction('Fix wireless IP');
+      return;
+    }
+    ipAddressInput.classList.remove('input-error');
+    updateStatusPills({ action: 'Connecting wirelessly...' });
     if (ipAddress) {
       window.electronAPI.executeCommand('adb', ['tcpip', '5555'], 'adb-tcpip');
       setTimeout(() => {
@@ -121,12 +216,14 @@ document.addEventListener('DOMContentLoaded', () => {
   
   startMirroringBtn.addEventListener('click', () => {
     console.log('Starting mirroring...');
+    setLastAction('Starting mirroring...');
     const args = getScrcpyArgs();
     window.electronAPI.executeCommand('scrcpy', args);
   });
 
   recordScreenBtn.addEventListener('click', async () => {
     console.log('Starting screen recording...');
+    setLastAction('Preparing recording...');
     const format = recordingFormatSelect.value;
     const filePath = await window.electronAPI.showSaveDialog(format);
     if (filePath) {
@@ -137,10 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   window.electronAPI.onCommandOutput((event, { data, commandType }) => {
-    const logEntry = document.createElement('div');
-    logEntry.textContent = data;
-    outputDiv.appendChild(logEntry);
-    outputDiv.scrollTop = outputDiv.scrollHeight;
+    appendLogEntry(data, commandType);
 
     // Handle device list update
     if (commandType === 'adb-devices') {
@@ -165,6 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
             deviceSelect.appendChild(option);
             updateDeviceDetails('No devices found');
         }
+        setLastAction('Devices refreshed');
     } else if (commandType === 'get-device-name') {
         deviceNameSpan.textContent = data.trim();
     } else if (commandType === 'get-battery-level') {
@@ -172,14 +267,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (batteryLevelMatch && batteryLevelMatch[1]) {
             deviceBatterySpan.textContent = `${batteryLevelMatch[1]}%`;
         }
+    } else if (commandType === 'adb-connect') {
+        setLastAction('Wireless connection updated');
     }
   });
 
   copyLogBtn.addEventListener('click', () => {
     navigator.clipboard.writeText(outputDiv.textContent).then(() => {
-      console.log('Log copied to clipboard!');
+      setLastAction('Log copied');
     }).catch(err => {
-      console.error('Failed to copy log: ', err);
+      appendLogEntry(`Failed to copy log: ${err}`, 'error');
     });
   });
 
@@ -191,9 +288,46 @@ document.addEventListener('DOMContentLoaded', () => {
     
     try {
       await window.electronAPI.saveLog(logContent, defaultFilename);
-      console.log('Log saved successfully!');
+      setLastAction('Log saved');
     } catch (err) {
-      console.error('Failed to save log: ', err);
+      appendLogEntry(`Failed to save log: ${err}`, 'error');
     }
+  });
+
+  clearLogBtn.addEventListener('click', () => {
+    outputDiv.innerHTML = '';
+    setLastAction('Log cleared');
+  });
+
+  logFilterInput.addEventListener('input', (event) => {
+    const query = event.target.value.toLowerCase();
+    const entries = outputDiv.querySelectorAll('.log-entry');
+    entries.forEach(entry => {
+      entry.hidden = query ? !entry.dataset.logText.includes(query) : false;
+    });
+  });
+
+  presetButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const presetKey = button.dataset.preset;
+      const preset = presets[presetKey];
+      if (!preset) {
+        return;
+      }
+
+      resolutionInput.value = preset.resolution || '';
+      bitrateInput.value = preset.bitrate || '';
+      maxFpsInput.value = preset.maxFps || '';
+      codecSelect.value = preset.codec || codecSelect.value;
+      audioBitrateInput.value = preset.audioBitrate || '';
+      windowSizeInput.value = preset.windowSize || '';
+      showTouchesCheckbox.checked = preset.showTouches;
+      fullscreenCheckbox.checked = preset.fullscreen;
+      noAudioCheckbox.checked = false;
+      disableControlCheckbox.checked = false;
+      stayAwakeCheckbox.checked = true;
+
+      setLastAction(`Preset applied: ${button.textContent}`);
+    });
   });
 });

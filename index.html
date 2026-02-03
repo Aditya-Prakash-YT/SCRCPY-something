@@ -9,7 +9,14 @@
     <div class="container">
         <!-- TOP ACTION BAR -->
         <header class="header">
-            <div class="title">Scrcpy</div>
+            <div>
+                <div class="title">Scrcpy</div>
+                <div class="status-bar">
+                    <span class="status-pill" id="connection-status">Disconnected</span>
+                    <span class="status-pill subtle" id="active-device">No device selected</span>
+                    <span class="status-pill info" id="last-action">Idle</span>
+                </div>
+            </div>
             <div class="main-actions">
                 <button id="start-mirroring">Start Mirroring</button>
                 <button id="record-screen">Record Screen</button>
@@ -31,7 +38,17 @@
                         <label for="ip-address">Wireless IP</label>
                         <input type="text" id="ip-address" placeholder="e.g., 192.168.1.10">
                     </div>
+                    <p class="helper-text">Tip: Enable wireless debugging on your device before connecting.</p>
                     <button id="connect-wireless">Connect</button>
+                </div>
+                <div class="card">
+                    <h2>Quick Presets</h2>
+                    <div class="preset-grid">
+                        <button class="preset-button" data-preset="quality">High Quality</button>
+                        <button class="preset-button" data-preset="balanced">Balanced</button>
+                        <button class="preset-button" data-preset="latency">Low Latency</button>
+                    </div>
+                    <p class="helper-text">Presets update display, audio, and window defaults with one click.</p>
                 </div>
                 <div class="card">
                     <h2>Device Details</h2>
@@ -81,7 +98,7 @@
                             <div class="toggle-group"><label for="fullscreen">Fullscreen</label><label class="toggle-switch"><input type="checkbox" id="fullscreen"><span class="slider"></span></label></div>
                             <div class="toggle-group"><label for="always-on-top">Always on Top</label><label class="toggle-switch"><input type="checkbox" id="always-on-top"><span class="slider"></span></label></div>
                             <div class="form-group-inline"><label for="window-pos">Position (x,y)</label><input type="text" id="window-pos" placeholder="e.g., 100,100"></div>
-                            <div class="form-group-inline"><label for="window-size">Size (w,h)</label><input type="text" id="window-size" placeholder="e.g., 800,600"></div>
+                            <div class="form-group-inline"><label for="window-size">Size (w,h)</label><input type="text" id="window-size" placeholder="e.g., 800x600"></div>
                         </div>
                         <!-- Others Tab -->
                         <div id="others" class="tab-content">
@@ -97,8 +114,17 @@
 
         <!-- BOTTOM LOGGER BOX -->
         <div class="logger-box">
-            <button id="copy-log" class="copy-log-button">Copy Log</button>
-            <button id="save-log" class="save-log-button">Save Log</button>
+            <div class="log-toolbar">
+                <div class="log-actions">
+                    <button id="copy-log" class="ghost-button">Copy Log</button>
+                    <button id="save-log" class="ghost-button">Save Log</button>
+                    <button id="clear-log" class="ghost-button danger">Clear</button>
+                </div>
+                <div class="log-filter">
+                    <label for="log-filter">Filter</label>
+                    <input type="text" id="log-filter" placeholder="Search logs...">
+                </div>
+            </div>
             <div id="output"></div>
         </div>
     </div>
