@@ -120,6 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (autoScrollCheckbox.checked) {
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
+    outputDiv.scrollTop = outputDiv.scrollHeight;
 
     if (logFilterInput.value) {
       const query = logFilterInput.value.toLowerCase();
@@ -241,6 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
     getDevices();
     setLastAction('Refreshing devices...');
   });
+  refreshDevicesBtn.addEventListener('click', getDevices);
   ipAddressInput.addEventListener('input', () => {
     ipAddressInput.classList.remove('input-error');
   });
@@ -455,4 +457,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   updateCommandPreview();
+    });
+  });
 });
